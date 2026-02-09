@@ -1,0 +1,12 @@
+.vercel
+.env*.local
+
+# Test data and tokens
+*.token.json
+*_token.json
+token.txt
+*_test.json
+*_response.json
+signin_*.json
+signup_*.json
+fresh_token.json

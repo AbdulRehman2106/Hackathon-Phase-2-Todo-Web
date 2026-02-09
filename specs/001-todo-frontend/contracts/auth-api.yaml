@@ -1,0 +1,210 @@
+openapi: 3.0.3
+info:
+  title: Todo Application - Authentication API
+  description: Authentication endpoints for user registration and login
+  version: 1.0.0
+  contact:
+    name: Todo App Team
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+  - url: https://api.todo-app.example.com
+    description: Production server
+
+tags:
+  - name: Authentication
+    description: User authentication operations
+
+paths:
+  /api/auth/signup:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new user
+      description: Create a new user account with email and password. Returns JWT token for immediate authentication.
+      operationId: signUp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  maxLength: 255
+                  example: user@example.com
+                  description: User's email address (must be unique)
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  example: SecurePass123
+                  description: User's password (minimum 8 characters)
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                    description: JWT authentication token
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid input (validation error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalidEmail:
+                  value:
+                    error: Invalid email format
+                    details: Email must be a valid email address
+                weakPassword:
+                  value:
+                    error: Password too short
+                    details: Password must be at least 8 characters
+        '409':
+          description: Email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Email already registered
+                details: An account with this email already exists
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/signin:
+    post:
+      tags:
+        - Authentication
+      summary: Sign in existing user
+      description: Authenticate user with email and password. Returns JWT token on success.
+      operationId: signIn
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                  description: User's email address
+                password:
+                  type: string
+                  format: password
+                  example: SecurePass123
+                  description: User's password
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                    description: JWT authentication token
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Invalid credentials
+                details: Email or password is incorrect
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    User:
+      type: object
+      required:
+        - id
+        - email
+        - created_at
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+          description: Unique user identifier
+        email:
+          type: string
+          format: email
+          example: user@example.com
+          description: User's email address
+        created_at:
+          type: string
+          format: date-time
+          example: '2026-02-05T10:30:00Z'
+          description: Timestamp when user was created (ISO 8601)
+        updated_at:
+          type: string
+          format: date-time
+          example: '2026-02-05T10:30:00Z'
+          description: Timestamp when user was last updated (ISO 8601)
+      description: User object (hashed_password is never included)
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          example: Invalid input
+          description: Human-readable error message
+        details:
+          type: string
+          example: Email must be a valid email address
+          description: Additional error details (optional)
+      description: Standard error response
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from /api/auth/signup or /api/auth/signin
+
+security: []  # Authentication endpoints don't require auth

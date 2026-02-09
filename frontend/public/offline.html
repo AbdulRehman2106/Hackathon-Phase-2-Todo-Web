@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline - Todo App</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(to bottom right, #f9fafb, #e5e7eb);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .container {
+      max-width: 28rem;
+      width: 100%;
+      background: white;
+      border-radius: 1rem;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      padding: 2rem;
+      text-align: center;
+    }
+    .icon {
+      width: 5rem;
+      height: 5rem;
+      background: #f3f4f6;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+    }
+    .icon svg {
+      width: 2.5rem;
+      height: 2.5rem;
+      color: #9ca3af;
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #111827;
+      margin-bottom: 0.75rem;
+    }
+    p {
+      color: #6b7280;
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+    .features {
+      background: #f9fafb;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      text-align: left;
+    }
+    .features h3 {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 0.75rem;
+    }
+    .features ul {
+      list-style: none;
+    }
+    .features li {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      color: #6b7280;
+      margin-bottom: 0.5rem;
+    }
+    .features li:last-child {
+      margin-bottom: 0;
+    }
+    .check {
+      color: #10b981;
+    }
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    button, a {
+      width: 100%;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      font-weight: 500;
+      text-decoration: none;
+      display: inline-block;
+      cursor: pointer;
+      border: none;
+      font-size: 1rem;
+      transition: all 0.2s;
+    }
+    .primary {
+      background: #6366f1;
+      color: white;
+    }
+    .primary:hover {
+      background: #4f46e5;
+    }
+    .secondary {
+      background: #f3f4f6;
+      color: #374151;
+    }
+    .secondary:hover {
+      background: #e5e7eb;
+    }
+    .footer {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #e5e7eb;
+      font-size: 0.75rem;
+      color: #9ca3af;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 5.658a9 9 0 01-2.167-9.238m7.824 2.167a1 1 0 111.414 1.414m-1.414-1.414L3 3m8.293 8.293l1.414 1.414" />
+      </svg>
+    </div>
+
+    <h1>You're Offline</h1>
+
+    <p>No internet connection detected. Don't worry, you can still view your cached tasks and any changes will sync when you're back online.</p>
+
+    <div class="features">
+      <h3>Available Offline:</h3>
+      <ul>
+        <li><span class="check">✓</span> View cached tasks</li>
+        <li><span class="check">✓</span> Mark tasks as complete</li>
+        <li><span class="check">✓</span> Create new tasks (will sync later)</li>
+        <li><span class="check">✓</span> Edit existing tasks</li>
+      </ul>
+    </div>
+
+    <div class="actions">
+      <button class="primary" onclick="window.location.reload()">Try Again</button>
+      <a href="/dashboard" class="secondary">Go to Dashboard</a>
+    </div>
+
+    <div class="footer">
+      Your changes will automatically sync when connection is restored
+    </div>
+  </div>
+</body>
+</html>
