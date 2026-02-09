@@ -28,13 +28,16 @@ app.add_middleware(
 )
 
 # Initialize database tables on startup
-# Note: Disabled for Vercel serverless deployment
-# Database tables should be created manually or via migration scripts
-# from src.database import create_db_and_tables
+from src.database import create_db_and_tables
 
-# @app.on_event("startup")
-# def on_startup():
-#     create_db_and_tables()
+@app.on_event("startup")
+def on_startup():
+    """Initialize database tables on application startup."""
+    try:
+        create_db_and_tables()
+    except Exception as e:
+        print(f"Warning: Could not initialize database tables: {e}")
+        # Continue anyway - tables might already exist
 
 # Health check endpoint
 @app.get("/health")

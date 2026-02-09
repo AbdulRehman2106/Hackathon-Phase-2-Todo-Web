@@ -13,11 +13,17 @@ from typing import Generator
 from sqlmodel import Session, create_engine, SQLModel
 
 # Get database URL from environment variable
-# Using SQLite for development/testing
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "sqlite:///./todo.db"
-)
+# For Vercel serverless, use /tmp directory for SQLite
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if DATABASE_URL is None:
+    # Check if running on Vercel (serverless environment)
+    if os.getenv("VERCEL"):
+        # Use /tmp directory which is writable in Vercel serverless
+        DATABASE_URL = "sqlite:////tmp/todo.db"
+    else:
+        # Local development
+        DATABASE_URL = "sqlite:///./todo.db"
 
 # Create database engine
 # connect_args only needed for SQLite
@@ -26,7 +32,8 @@ connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite")
 engine = create_engine(
     DATABASE_URL,
     echo=False,  # Disable SQL query logging for serverless
-    connect_args=connect_args
+    connect_args=connect_args,
+    pool_pre_ping=True,  # Verify connections before using
 )
 
 
