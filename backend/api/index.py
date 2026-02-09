@@ -1,6 +1,6 @@
 """
 Vercel Serverless Function for FastAPI
-Vercel natively supports ASGI apps - just export the app directly
+Uses Mangum to adapt ASGI app for serverless
 """
 import sys
 import os
@@ -9,9 +9,10 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.main import app
+from mangum import Mangum
 
-# Vercel will automatically detect and handle the ASGI app
-# No need for Mangum or any wrapper
+# Create the handler for Vercel
+handler = Mangum(app, lifespan="off")
 
 # For local testing
 if __name__ == "__main__":
