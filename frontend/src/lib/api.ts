@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { AuthResponse, Task, CreateTaskPayload, UpdateTaskPayload, TaskListResponse, APIError, Subtask, CreateSubtaskPayload, UpdateSubtaskPayload, ForgotPasswordResponse, TokenValidationResponse, ResetPasswordResponse } from './types';
+import { AuthResponse, Task, CreateTaskPayload, UpdateTaskPayload, TaskListResponse, APIError, Subtask, CreateSubtaskPayload, UpdateSubtaskPayload, ForgotPasswordResponse, TokenValidationResponse, ResetPasswordResponse, ChatRequest, ChatResponse, ConversationHistory } from './types';
 
 // Network status tracking
 let isOnline = typeof window !== 'undefined' ? navigator.onLine : true;
@@ -263,6 +263,32 @@ export const api = {
         message: string;
         provider?: string;
       }>('/api/ai/health', { signal });
+      return response.data;
+    },
+  },
+
+  // Chat
+  chat: {
+    sendMessage: async (message: string, signal?: AbortSignal): Promise<ChatResponse> => {
+      const response = await apiClient.post<ChatResponse>('/api/v1/chat', {
+        message,
+      }, { signal });
+      return response.data;
+    },
+
+    getHistory: async (signal?: AbortSignal): Promise<ConversationHistory> => {
+      const response = await apiClient.get<ConversationHistory>('/api/v1/chat/history', { signal });
+      return response.data;
+    },
+
+    healthCheck: async (signal?: AbortSignal): Promise<{
+      status: string;
+      message: string;
+    }> => {
+      const response = await apiClient.get<{
+        status: string;
+        message: string;
+      }>('/api/v1/chat/health', { signal });
       return response.data;
     },
   },

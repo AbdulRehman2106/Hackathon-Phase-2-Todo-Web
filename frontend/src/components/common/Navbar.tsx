@@ -34,6 +34,23 @@ export default function Navbar({ isAuthenticated, userEmail, onSignOut }: Navbar
           <div className="hidden md:flex items-center gap-6">
             {isAuthenticated && userEmail ? (
               <>
+                {/* Dashboard Link */}
+                <Link
+                  href="/dashboard"
+                  className="text-neutral-600 hover:text-primary-600 font-medium transition-colors"
+                >
+                  Tasks
+                </Link>
+
+                {/* Chat Link */}
+                <Link
+                  href="/dashboard/chat"
+                  className="flex items-center gap-2 text-neutral-600 hover:text-primary-600 font-medium transition-colors"
+                >
+                  <span>💬</span>
+                  <span>AI Chat</span>
+                </Link>
+
                 {/* Settings Link */}
                 <Link
                   href="/settings"
@@ -115,6 +132,26 @@ export default function Navbar({ isAuthenticated, userEmail, onSignOut }: Navbar
                     {userEmail}
                   </span>
                 </div>
+
+                {/* Dashboard Link */}
+                <Link
+                  href="/dashboard"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 text-neutral-700 hover:bg-neutral-100 rounded-lg transition-all"
+                >
+                  <span className="text-xl">📋</span>
+                  <span className="font-medium">Tasks</span>
+                </Link>
+
+                {/* Chat Link */}
+                <Link
+                  href="/dashboard/chat"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 text-neutral-700 hover:bg-neutral-100 rounded-lg transition-all"
+                >
+                  <span className="text-xl">💬</span>
+                  <span className="font-medium">AI Chat</span>
+                </Link>
 
                 {/* Settings Link */}
                 <Link

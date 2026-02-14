@@ -123,3 +123,25 @@ export interface APIError {
 export interface TaskListResponse {
   tasks: Task[];
 }
+
+// Chat types
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+}
+
+export interface ChatRequest {
+  message: string;
+}
+
+export interface ChatResponse {
+  response: string;
+  conversation_id: string;
+}
+
+export interface ConversationHistory {
+  conversation_id: string;
+  messages: ChatMessage[];
+}
