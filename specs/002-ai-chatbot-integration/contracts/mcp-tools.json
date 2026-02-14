@@ -1,0 +1,466 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MCP Tools for AI Todo Chatbot",
+  "description": "JSON schemas for all Model Context Protocol (MCP) tools used by the AI chatbot to interact with the todo task system. All tools enforce user isolation and require authenticated user_id.",
+  "version": "1.0.0",
+  "tools": [
+    {
+      "name": "add_task",
+      "description": "Create a new task for the authenticated user. Extracts task title and optional description from natural language input.",
+      "input_schema": {
+        "type": "object",
+        "required": ["user_id", "title"],
+        "properties": {
+          "user_id": {
+            "type": "integer",
+            "description": "ID of the authenticated user (automatically provided by system)",
+            "minimum": 1
+          },
+          "title": {
+            "type": "string",
+            "description": "Task title extracted from user's message",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional task description or additional details",
+            "maxLength": 1000,
+            "default": ""
+          }
+        },
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "required": ["success", "task_id", "message"],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the operation succeeded",
+            "const": true
+          },
+          "task_id": {
+            "type": "integer",
+            "description": "ID of the newly created task",
+            "minimum": 1
+          },
+          "message": {
+            "type": "string",
+            "description": "User-friendly confirmation message",
+            "example": "Task 'Buy groceries' created successfully"
+          },
+          "task": {
+            "type": "object",
+            "description": "The created task object",
+            "properties": {
+              "id": {"type": "integer"},
+              "title": {"type": "string"},
+              "description": {"type": "string"},
+              "completed": {"type": "boolean"},
+              "created_at": {"type": "string", "format": "date-time"}
+            }
+          }
+        }
+      },
+      "error_cases": [
+        {
+          "condition": "title is empty or whitespace",
+          "error_code": "INVALID_TITLE",
+          "message": "Task title cannot be empty"
+        },
+        {
+          "condition": "user_id does not exist",
+          "error_code": "USER_NOT_FOUND",
+          "message": "User not found"
+        },
+        {
+          "condition": "database error",
+          "error_code": "DATABASE_ERROR",
+          "message": "Failed to create task. Please try again."
+        }
+      ]
+    },
+    {
+      "name": "list_tasks",
+      "description": "Retrieve tasks for the authenticated user. Supports filtering by completion status (all, pending, or completed).",
+      "input_schema": {
+        "type": "object",
+        "required": ["user_id"],
+        "properties": {
+          "user_id": {
+            "type": "integer",
+            "description": "ID of the authenticated user (automatically provided by system)",
+            "minimum": 1
+          },
+          "filter": {
+            "type": "string",
+            "description": "Filter tasks by status",
+            "enum": ["all", "pending", "completed"],
+            "default": "all"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of tasks to return",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 50
+          }
+        },
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "required": ["success", "tasks", "count", "message"],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the operation succeeded",
+            "const": true
+          },
+          "tasks": {
+            "type": "array",
+            "description": "List of tasks matching the filter",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {"type": "integer"},
+                "title": {"type": "string"},
+                "description": {"type": "string"},
+                "completed": {"type": "boolean"},
+                "created_at": {"type": "string", "format": "date-time"},
+                "updated_at": {"type": "string", "format": "date-time"}
+              }
+            }
+          },
+          "count": {
+            "type": "integer",
+            "description": "Number of tasks returned",
+            "minimum": 0
+          },
+          "message": {
+            "type": "string",
+            "description": "User-friendly summary message",
+            "example": "You have 3 pending tasks"
+          }
+        }
+      },
+      "error_cases": [
+        {
+          "condition": "user_id does not exist",
+          "error_code": "USER_NOT_FOUND",
+          "message": "User not found"
+        },
+        {
+          "condition": "invalid filter value",
+          "error_code": "INVALID_FILTER",
+          "message": "Filter must be 'all', 'pending', or 'completed'"
+        },
+        {
+          "condition": "database error",
+          "error_code": "DATABASE_ERROR",
+          "message": "Failed to retrieve tasks. Please try again."
+        }
+      ]
+    },
+    {
+      "name": "complete_task",
+      "description": "Mark a task as completed. Accepts either task_id or task_title for identification. Validates that the task belongs to the authenticated user.",
+      "input_schema": {
+        "type": "object",
+        "required": ["user_id"],
+        "oneOf": [
+          {"required": ["task_id"]},
+          {"required": ["task_title"]}
+        ],
+        "properties": {
+          "user_id": {
+            "type": "integer",
+            "description": "ID of the authenticated user (automatically provided by system)",
+            "minimum": 1
+          },
+          "task_id": {
+            "type": "integer",
+            "description": "ID of the task to complete",
+            "minimum": 1
+          },
+          "task_title": {
+            "type": "string",
+            "description": "Title or partial title of the task to complete (case-insensitive substring match)",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "required": ["success", "task_id", "message"],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the operation succeeded",
+            "const": true
+          },
+          "task_id": {
+            "type": "integer",
+            "description": "ID of the completed task",
+            "minimum": 1
+          },
+          "message": {
+            "type": "string",
+            "description": "User-friendly confirmation message",
+            "example": "Task 'Buy groceries' marked as complete"
+          },
+          "task": {
+            "type": "object",
+            "description": "The updated task object",
+            "properties": {
+              "id": {"type": "integer"},
+              "title": {"type": "string"},
+              "completed": {"type": "boolean", "const": true}
+            }
+          }
+        }
+      },
+      "error_cases": [
+        {
+          "condition": "task not found or doesn't belong to user",
+          "error_code": "TASK_NOT_FOUND",
+          "message": "Task not found. Use 'show tasks' to see your list."
+        },
+        {
+          "condition": "multiple tasks match title",
+          "error_code": "AMBIGUOUS_MATCH",
+          "message": "Multiple tasks match that description. Please be more specific or use the task ID."
+        },
+        {
+          "condition": "task already completed",
+          "error_code": "ALREADY_COMPLETED",
+          "message": "This task is already marked as complete"
+        },
+        {
+          "condition": "neither task_id nor task_title provided",
+          "error_code": "MISSING_IDENTIFIER",
+          "message": "Please specify either a task ID or task title"
+        },
+        {
+          "condition": "database error",
+          "error_code": "DATABASE_ERROR",
+          "message": "Failed to complete task. Please try again."
+        }
+      ]
+    },
+    {
+      "name": "delete_task",
+      "description": "Permanently delete a task. Accepts either task_id or task_title for identification. Validates that the task belongs to the authenticated user.",
+      "input_schema": {
+        "type": "object",
+        "required": ["user_id"],
+        "oneOf": [
+          {"required": ["task_id"]},
+          {"required": ["task_title"]}
+        ],
+        "properties": {
+          "user_id": {
+            "type": "integer",
+            "description": "ID of the authenticated user (automatically provided by system)",
+            "minimum": 1
+          },
+          "task_id": {
+            "type": "integer",
+            "description": "ID of the task to delete",
+            "minimum": 1
+          },
+          "task_title": {
+            "type": "string",
+            "description": "Title or partial title of the task to delete (case-insensitive substring match)",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "required": ["success", "task_id", "message"],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the operation succeeded",
+            "const": true
+          },
+          "task_id": {
+            "type": "integer",
+            "description": "ID of the deleted task",
+            "minimum": 1
+          },
+          "message": {
+            "type": "string",
+            "description": "User-friendly confirmation message",
+            "example": "Task 'Buy groceries' has been deleted"
+          }
+        }
+      },
+      "error_cases": [
+        {
+          "condition": "task not found or doesn't belong to user",
+          "error_code": "TASK_NOT_FOUND",
+          "message": "Task not found. Use 'show tasks' to see your list."
+        },
+        {
+          "condition": "multiple tasks match title",
+          "error_code": "AMBIGUOUS_MATCH",
+          "message": "Multiple tasks match that description. Please be more specific or use the task ID."
+        },
+        {
+          "condition": "neither task_id nor task_title provided",
+          "error_code": "MISSING_IDENTIFIER",
+          "message": "Please specify either a task ID or task title"
+        },
+        {
+          "condition": "database error",
+          "error_code": "DATABASE_ERROR",
+          "message": "Failed to delete task. Please try again."
+        }
+      ]
+    },
+    {
+      "name": "update_task",
+      "description": "Update a task's title and/or description. Accepts either task_id or task_title for identification. Validates that the task belongs to the authenticated user.",
+      "input_schema": {
+        "type": "object",
+        "required": ["user_id"],
+        "oneOf": [
+          {"required": ["task_id"]},
+          {"required": ["task_title"]}
+        ],
+        "properties": {
+          "user_id": {
+            "type": "integer",
+            "description": "ID of the authenticated user (automatically provided by system)",
+            "minimum": 1
+          },
+          "task_id": {
+            "type": "integer",
+            "description": "ID of the task to update",
+            "minimum": 1
+          },
+          "task_title": {
+            "type": "string",
+            "description": "Current title or partial title of the task to update (case-insensitive substring match)",
+            "minLength": 1
+          },
+          "new_title": {
+            "type": "string",
+            "description": "New title for the task",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "new_description": {
+            "type": "string",
+            "description": "New description for the task",
+            "maxLength": 1000
+          }
+        },
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "required": ["success", "task_id", "message"],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the operation succeeded",
+            "const": true
+          },
+          "task_id": {
+            "type": "integer",
+            "description": "ID of the updated task",
+            "minimum": 1
+          },
+          "message": {
+            "type": "string",
+            "description": "User-friendly confirmation message",
+            "example": "Task updated successfully"
+          },
+          "task": {
+            "type": "object",
+            "description": "The updated task object",
+            "properties": {
+              "id": {"type": "integer"},
+              "title": {"type": "string"},
+              "description": {"type": "string"},
+              "completed": {"type": "boolean"},
+              "updated_at": {"type": "string", "format": "date-time"}
+            }
+          }
+        }
+      },
+      "error_cases": [
+        {
+          "condition": "task not found or doesn't belong to user",
+          "error_code": "TASK_NOT_FOUND",
+          "message": "Task not found. Use 'show tasks' to see your list."
+        },
+        {
+          "condition": "multiple tasks match title",
+          "error_code": "AMBIGUOUS_MATCH",
+          "message": "Multiple tasks match that description. Please be more specific or use the task ID."
+        },
+        {
+          "condition": "neither task_id nor task_title provided",
+          "error_code": "MISSING_IDENTIFIER",
+          "message": "Please specify either a task ID or task title"
+        },
+        {
+          "condition": "neither new_title nor new_description provided",
+          "error_code": "NO_UPDATES",
+          "message": "Please specify what you'd like to update"
+        },
+        {
+          "condition": "new_title is empty",
+          "error_code": "INVALID_TITLE",
+          "message": "Task title cannot be empty"
+        },
+        {
+          "condition": "database error",
+          "error_code": "DATABASE_ERROR",
+          "message": "Failed to update task. Please try again."
+        }
+      ]
+    }
+  ],
+  "common_patterns": {
+    "user_isolation": {
+      "description": "All tools MUST validate that the task belongs to the authenticated user before performing any operation",
+      "implementation": "Query database with both task_id AND user_id filters"
+    },
+    "title_matching": {
+      "description": "When task_title is provided instead of task_id, use case-insensitive substring matching",
+      "implementation": "SQL: WHERE LOWER(title) LIKE LOWER('%' || task_title || '%') AND user_id = ?"
+    },
+    "ambiguous_matches": {
+      "description": "If multiple tasks match the title, return AMBIGUOUS_MATCH error with list of matching tasks",
+      "user_guidance": "Ask user to be more specific or use task ID"
+    },
+    "error_responses": {
+      "description": "All errors must return user-friendly messages without exposing internal details",
+      "structure": {
+        "success": false,
+        "error_code": "ERROR_CODE",
+        "message": "User-friendly error message"
+      }
+    }
+  },
+  "security_requirements": {
+    "authentication": "All tools receive user_id from authenticated JWT context",
+    "authorization": "All tools MUST verify task ownership before operations",
+    "validation": "All inputs MUST be validated against schema before execution",
+    "logging": "All tool executions MUST be logged with user_id, tool_name, parameters, and result"
+  },
+  "implementation_notes": {
+    "stateless": "Tools must not maintain any state between calls",
+    "idempotent": "Where possible, tools should be idempotent (e.g., completing an already completed task succeeds)",
+    "atomic": "Each tool execution should be atomic (use database transactions)",
+    "performance": "All tool executions should complete within 200ms (excluding network latency)"
+  }
+}

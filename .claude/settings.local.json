@@ -93,7 +93,11 @@
       "Bash(../.venv/Scripts/python:*)",
       "Bash(find .venv -type d -name \"__pycache__\" -exec rm -rf {} +)",
       "Bash(find .venv -type f -name \"*.pyc\" -delete)",
-      "Bash(git init:*)"
+      "Bash(git init:*)",
+      "Bash(git revert:*)",
+      "Bash(.specify/scripts/powershell/setup-plan.ps1 -Json)",
+      "Bash(grep:*)",
+      "Bash(git rm:*)"
     ]
   }
 }

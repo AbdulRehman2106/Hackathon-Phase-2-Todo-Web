@@ -1,0 +1,342 @@
+openapi: 3.0.3
+info:
+  title: AI Todo Chatbot API
+  description: |
+    REST API for AI-powered todo task management through natural language conversation.
+
+    ## Authentication
+    All endpoints require JWT authentication via Bearer token in Authorization header.
+
+    ## Rate Limits
+    - 100 requests per minute per user
+    - 1000 requests per hour per user
+
+    ## Error Handling
+    All errors return consistent JSON structure with user-friendly messages.
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Local development server
+  - url: https://api.example.com/v1
+    description: Production server
+
+security:
+  - BearerAuth: []
+
+paths:
+  /chat:
+    post:
+      summary: Send chat message
+      description: |
+        Send a natural language message to the AI chatbot. The chatbot will:
+        - Understand user intent (add task, list tasks, complete task, etc.)
+        - Execute appropriate MCP tool operations
+        - Return conversational response with operation results
+
+        All conversation history is automatically persisted and loaded for context.
+      operationId: sendChatMessage
+      tags:
+        - Chat
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+            examples:
+              addTask:
+                summary: Add a task
+                value:
+                  message: "Add a task to buy groceries tomorrow"
+              listTasks:
+                summary: List tasks
+                value:
+                  message: "Show me all my pending tasks"
+              completeTask:
+                summary: Complete a task
+                value:
+                  message: "Mark task 5 as complete"
+              deleteTask:
+                summary: Delete a task
+                value:
+                  message: "Delete the grocery shopping task"
+      responses:
+        '200':
+          description: Successful response with AI assistant message
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponse'
+              examples:
+                taskAdded:
+                  summary: Task added successfully
+                  value:
+                    message: "I've added 'Buy groceries' to your task list."
+                    conversation_id: 123
+                    message_id: 456
+                    timestamp: "2026-02-15T10:30:00Z"
+                tasksList:
+                  summary: Tasks listed
+                  value:
+                    message: "You have 3 pending tasks:\n1. Buy groceries\n2. Call dentist\n3. Finish report"
+                    conversation_id: 123
+                    message_id: 457
+                    timestamp: "2026-02-15T10:31:00Z"
+        '400':
+          description: Bad request - invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                emptyMessage:
+                  summary: Empty message
+                  value:
+                    error: "Message cannot be empty"
+                    code: "INVALID_INPUT"
+                    timestamp: "2026-02-15T10:30:00Z"
+        '401':
+          description: Unauthorized - missing or invalid JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missingToken:
+                  summary: Missing authentication token
+                  value:
+                    error: "Authentication required"
+                    code: "UNAUTHORIZED"
+                    timestamp: "2026-02-15T10:30:00Z"
+        '429':
+          description: Too many requests - rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                rateLimitExceeded:
+                  summary: Rate limit exceeded
+                  value:
+                    error: "Rate limit exceeded. Please try again in 60 seconds."
+                    code: "RATE_LIMIT_EXCEEDED"
+                    timestamp: "2026-02-15T10:30:00Z"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                aiServiceError:
+                  summary: AI service unavailable
+                  value:
+                    error: "AI service is temporarily unavailable. Please try again."
+                    code: "AI_SERVICE_ERROR"
+                    timestamp: "2026-02-15T10:30:00Z"
+        '503':
+          description: Service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serviceUnavailable:
+                  summary: Service temporarily unavailable
+                  value:
+                    error: "Service is temporarily unavailable. Please try again later."
+                    code: "SERVICE_UNAVAILABLE"
+                    timestamp: "2026-02-15T10:30:00Z"
+
+  /chat/history:
+    get:
+      summary: Get conversation history
+      description: |
+        Retrieve the conversation history for the authenticated user.
+        Returns messages in chronological order.
+      operationId: getChatHistory
+      tags:
+        - Chat
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of messages to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+        - name: offset
+          in: query
+          description: Number of messages to skip (for pagination)
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Conversation history retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationHistory'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT token obtained from authentication endpoint.
+        Include in Authorization header as: `Bearer <token>`
+
+  schemas:
+    ChatRequest:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          minLength: 1
+          maxLength: 10000
+          description: User's natural language message
+          example: "Add a task to buy groceries tomorrow"
+      additionalProperties: false
+
+    ChatResponse:
+      type: object
+      required:
+        - message
+        - conversation_id
+        - message_id
+        - timestamp
+      properties:
+        message:
+          type: string
+          description: AI assistant's response message
+          example: "I've added 'Buy groceries' to your task list."
+        conversation_id:
+          type: integer
+          description: ID of the conversation
+          example: 123
+        message_id:
+          type: integer
+          description: ID of the assistant's message
+          example: 456
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of the response
+          example: "2026-02-15T10:30:00Z"
+      additionalProperties: false
+
+    ConversationHistory:
+      type: object
+      required:
+        - conversation_id
+        - messages
+        - total_count
+      properties:
+        conversation_id:
+          type: integer
+          description: ID of the conversation
+          example: 123
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessageItem'
+          description: List of messages in chronological order
+        total_count:
+          type: integer
+          description: Total number of messages in the conversation
+          example: 42
+        has_more:
+          type: boolean
+          description: Whether there are more messages available
+          example: true
+      additionalProperties: false
+
+    MessageItem:
+      type: object
+      required:
+        - id
+        - role
+        - content
+        - timestamp
+      properties:
+        id:
+          type: integer
+          description: Message ID
+          example: 456
+        role:
+          type: string
+          enum: [user, assistant]
+          description: Who sent the message
+          example: "user"
+        content:
+          type: string
+          description: Message content
+          example: "Add a task to buy groceries"
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp
+          example: "2026-02-15T10:30:00Z"
+      additionalProperties: false
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - code
+        - timestamp
+      properties:
+        error:
+          type: string
+          description: User-friendly error message
+          example: "Message cannot be empty"
+        code:
+          type: string
+          description: Machine-readable error code
+          enum:
+            - INVALID_INPUT
+            - UNAUTHORIZED
+            - FORBIDDEN
+            - NOT_FOUND
+            - RATE_LIMIT_EXCEEDED
+            - AI_SERVICE_ERROR
+            - DATABASE_ERROR
+            - SERVICE_UNAVAILABLE
+          example: "INVALID_INPUT"
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of the error
+          example: "2026-02-15T10:30:00Z"
+        details:
+          type: object
+          description: Optional additional error details (for debugging)
+          additionalProperties: true
+      additionalProperties: false
+
+tags:
+  - name: Chat
+    description: AI chatbot conversation endpoints

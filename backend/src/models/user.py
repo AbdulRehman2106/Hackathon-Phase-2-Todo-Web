@@ -1,6 +1,9 @@
 from sqlmodel import SQLModel, Field, Relationship
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from src.models.conversation import Conversation
 
 class User(SQLModel, table=True):
     """User model representing an authenticated user of the application."""
@@ -15,6 +18,7 @@ class User(SQLModel, table=True):
 
     # Relationships
     tasks: List["Task"] = Relationship(back_populates="user")
+    conversations: List["Conversation"] = Relationship(back_populates="user")
 
     class Config:
         json_schema_extra = {
