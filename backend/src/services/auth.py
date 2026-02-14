@@ -14,8 +14,8 @@ from typing import Optional, Dict, Any
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 
-# Password hashing configuration
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Password hashing configuration using Argon2 (more secure and no compatibility issues)
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 # JWT configuration from environment variables
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-secret-key-change-in-production")
@@ -25,7 +25,7 @@ JWT_EXPIRATION_MINUTES = int(os.getenv("JWT_EXPIRATION_MINUTES", "10080"))  # De
 
 def hash_password(password: str) -> str:
     """
-    Hash a plain text password using bcrypt.
+    Hash a plain text password using Argon2.
 
     Args:
         password: Plain text password to hash
@@ -36,7 +36,7 @@ def hash_password(password: str) -> str:
     Example:
         >>> hashed = hash_password("mypassword123")
         >>> print(hashed)
-        $2b$12$...
+        $argon2id$...
     """
     return pwd_context.hash(password)
 
