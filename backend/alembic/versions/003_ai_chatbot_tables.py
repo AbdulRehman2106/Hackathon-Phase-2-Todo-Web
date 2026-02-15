@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers
 revision = '003_ai_chatbot_tables'
-down_revision = '002_add_password_reset_tokens'
+down_revision = '002'
 branch_labels = None
 depends_on = None
 
