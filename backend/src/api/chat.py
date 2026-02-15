@@ -11,7 +11,7 @@ from typing import List, Dict, Any, Optional
 from sqlmodel import Session
 import logging
 
-from src.database import get_db
+from src.database import get_session
 from src.middleware.jwt_auth import get_current_user
 from src.services.conversation_service import conversation_service
 from src.agents.orchestrator import orchestrator
@@ -55,7 +55,7 @@ class ConversationHistoryResponse(BaseModel):
 async def chat(
     request: ChatRequest,
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_session)
 ):
     """
     Send a message to the AI chatbot.
@@ -131,7 +131,7 @@ async def get_chat_history(
     limit: int = 50,
     offset: int = 0,
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_session)
 ):
     """
     Retrieve conversation history for the authenticated user.
