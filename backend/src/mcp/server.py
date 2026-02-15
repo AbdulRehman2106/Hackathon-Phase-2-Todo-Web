@@ -73,16 +73,36 @@ class MCPServer:
         List all registered tools in Cohere-compatible format.
 
         Returns:
-            List of tool definitions for Cohere API
+            List of tool definitions for Cohere API v2
         """
-        return [
-            {
-                "name": tool.name,
-                "description": tool.description,
-                "parameter_definitions": tool.parameters
-            }
-            for tool in self.tools.values()
-        ]
+        tools_list = []
+        for tool in self.tools.values():
+            # Convert parameter definitions to JSON Schema format
+            properties = {}
+            required = []
+
+            for param_name, param_def in tool.parameters.items():
+                properties[param_name] = {
+                    "type": param_def.get("type", "string"),
+                    "description": param_def.get("description", "")
+                }
+                if param_def.get("required", False):
+                    required.append(param_name)
+
+            tools_list.append({
+                "type": "function",
+                "function": {
+                    "name": tool.name,
+                    "description": tool.description,
+                    "parameters": {
+                        "type": "object",
+                        "properties": properties,
+                        "required": required
+                    }
+                }
+            })
+
+        return tools_list
 
     async def execute_tool(
         self,

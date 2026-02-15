@@ -87,21 +87,33 @@ class CohereClient:
 
             latency = time.time() - start_time
 
+            # Debug: Print full response structure
+            logger.info(f"Cohere response received: {response}")
+            logger.info(f"Response dict: {response.__dict__ if hasattr(response, '__dict__') else 'No dict'}")
+
             # Extract response content
             response_text = ""
-            for item in response.message.content:
-                if hasattr(item, 'text'):
-                    response_text = item.text
-                    break
+            if hasattr(response, 'message') and hasattr(response.message, 'content') and response.message.content:
+                for item in response.message.content:
+                    if hasattr(item, 'text'):
+                        response_text = item.text
+                        break
 
             # Extract tool calls if present
             tool_calls = []
             if hasattr(response.message, 'tool_calls') and response.message.tool_calls:
+                import json
                 for tool_call in response.message.tool_calls:
-                    tool_calls.append({
-                        "name": tool_call.function.name,
-                        "parameters": tool_call.function.arguments
-                    })
+                    try:
+                        # Parse JSON string arguments into dictionary
+                        arguments = json.loads(tool_call.function.arguments) if isinstance(tool_call.function.arguments, str) else tool_call.function.arguments
+                        tool_calls.append({
+                            "name": tool_call.function.name,
+                            "parameters": arguments
+                        })
+                    except json.JSONDecodeError as e:
+                        logger.error(f"Failed to parse tool call arguments: {e}")
+                        continue
 
             # Log metrics
             logger.info(f"Cohere API call successful (latency: {latency:.2f}s)")
@@ -122,7 +134,9 @@ class CohereClient:
             logger.error(f"Cohere service unavailable: {str(e)}")
             raise
         except Exception as e:
+            import traceback
             logger.error(f"Cohere API call failed: {str(e)}")
+            logger.error(f"Traceback: {traceback.format_exc()}")
             raise
 
     def validate_tool_call(self, tool_call: Dict[str, Any]) -> bool:

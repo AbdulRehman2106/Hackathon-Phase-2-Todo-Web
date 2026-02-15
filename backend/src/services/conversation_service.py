@@ -134,6 +134,9 @@ class ConversationService:
         """
         Build message array for Cohere API from Message objects.
 
+        Filters out messages with empty content as Cohere API v2 requires
+        all messages to have non-empty content or tool calls.
+
         Args:
             messages: List of Message objects
 
@@ -146,6 +149,7 @@ class ConversationService:
                 "content": msg.content
             }
             for msg in messages
+            if msg.content and msg.content.strip()  # Filter out empty messages
         ]
 
 

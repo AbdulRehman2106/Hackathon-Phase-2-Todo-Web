@@ -141,10 +141,14 @@ class AgentOrchestrator:
         ])
 
         # Create follow-up message to generate natural response
-        follow_up_messages = messages + [
-            {"role": "assistant", "content": initial_response},
-            {"role": "user", "content": f"Tool execution results:\n{tool_context}\n\nProvide a natural language response to the user based on these results."}
-        ]
+        # Only include non-empty messages to avoid Cohere API v2 validation errors
+        follow_up_messages = [msg for msg in messages if msg.get('content', '').strip()]
+
+        # Add tool results as user message for context
+        follow_up_messages.append({
+            "role": "user",
+            "content": f"Tool execution results:\n{tool_context}\n\nProvide a natural language response to the user based on these results."
+        })
 
         try:
             result = await self.cohere.chat(messages=follow_up_messages, tools=None)

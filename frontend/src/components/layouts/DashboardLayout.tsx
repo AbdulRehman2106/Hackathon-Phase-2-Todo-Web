@@ -17,7 +17,6 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
   const router = useRouter();
   const [userEmail, setUserEmail] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
-  const [showShortcuts, setShowShortcuts] = useState(false);
 
   useEffect(() => {
     // Check authentication on mount
@@ -38,17 +37,6 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Show shortcuts modal with ?
-      if (e.key === '?' && !e.ctrlKey && !e.metaKey) {
-        e.preventDefault();
-        setShowShortcuts(true);
-      }
-
-      // Close shortcuts modal with Escape
-      if (e.key === 'Escape' && showShortcuts) {
-        setShowShortcuts(false);
-      }
-
       // Ctrl/Cmd + N for new task
       if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
         e.preventDefault();
@@ -63,7 +51,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [showShortcuts]);
+  }, []);
 
   // Handle sign out
   const handleSignOut = () => {
@@ -100,50 +88,29 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
         {children}
       </main>
 
-      {/* Keyboard Shortcuts Help Button */}
+      {/* AI Chat Button */}
       <button
-        onClick={() => setShowShortcuts(true)}
-        className="fixed bottom-6 right-6 w-12 h-12 bg-primary-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110 flex items-center justify-center z-40"
-        title="Keyboard shortcuts (Press ?)"
+        onClick={() => router.push('/dashboard/chat')}
+        className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full shadow-lg hover:shadow-2xl transition-all hover:scale-110 flex items-center justify-center z-40 group"
+        title="AI Task Assistant"
       >
-        <span className="text-xl font-bold">?</span>
+        <svg
+          className="w-7 h-7 group-hover:rotate-12 transition-transform"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+          />
+          {/* Sparkle effect */}
+          <circle cx="18" cy="6" r="1.5" fill="currentColor" className="animate-pulse" />
+          <circle cx="6" cy="18" r="1" fill="currentColor" className="animate-pulse" style={{ animationDelay: '0.3s' }} />
+        </svg>
       </button>
-
-      {/* Keyboard Shortcuts Modal */}
-      {showShortcuts && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fade-in" onClick={() => setShowShortcuts(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 animate-scale-in" onClick={(e) => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-bold text-neutral-900">Keyboard Shortcuts</h3>
-              <button
-                onClick={() => setShowShortcuts(false)}
-                className="text-neutral-500 hover:text-neutral-700"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-neutral-700">New Task</span>
-                <kbd className="px-3 py-1 bg-neutral-100 rounded text-sm font-mono">Ctrl + N</kbd>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-neutral-700">Show Shortcuts</span>
-                <kbd className="px-3 py-1 bg-neutral-100 rounded text-sm font-mono">?</kbd>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-neutral-700">Close Modal</span>
-                <kbd className="px-3 py-1 bg-neutral-100 rounded text-sm font-mono">Esc</kbd>
-              </div>
-            </div>
-            <p className="mt-6 text-sm text-neutral-500 text-center">
-              More shortcuts coming soon!
-            </p>
-          </div>
-        </div>
-      )}
 
       {/* Footer */}
       <Footer />
