@@ -69,12 +69,12 @@ const TaskItem: React.FC<TaskItemProps> = ({
 
   return (
     <div
-      className={`bg-white rounded-xl border p-5 transition-all duration-300 animate-slide-up ${
+      className={`bg-white dark:bg-neutral-800 rounded-xl border p-5 transition-all duration-300 animate-slide-up ${
         isSelected ? 'ring-2 ring-primary-500 border-primary-500' : ''
       } ${
         task.completed
-          ? 'border-neutral-200 bg-neutral-50/50'
-          : 'border-neutral-200 hover:border-primary-300 hover:shadow-lg shadow-md hover:scale-[1.02] transform'
+          ? 'border-neutral-200 dark:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-800/50'
+          : 'border-neutral-200 dark:border-neutral-700 hover:border-primary-300 dark:hover:border-primary-600 hover:shadow-lg shadow-md hover:scale-[1.02] transform'
       }`}
       onMouseEnter={() => setShowPreview(true)}
       onMouseLeave={() => setShowPreview(false)}
