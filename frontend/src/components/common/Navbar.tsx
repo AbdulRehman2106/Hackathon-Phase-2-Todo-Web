@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import ThemeToggle from '@/components/ui/ThemeToggle';
 
 interface NavbarProps {
   isAuthenticated?: boolean;
@@ -14,7 +15,7 @@ export default function Navbar({ isAuthenticated, userEmail, onSignOut }: Navbar
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <nav className="bg-white/80 backdrop-blur-sm border-b border-neutral-200 sticky top-0 z-50 shadow-sm">
+    <nav className="bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm border-b border-neutral-200 dark:border-neutral-700 sticky top-0 z-50 shadow-sm transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
@@ -37,7 +38,7 @@ export default function Navbar({ isAuthenticated, userEmail, onSignOut }: Navbar
                 {/* Dashboard Link */}
                 <Link
                   href="/dashboard"
-                  className="text-neutral-600 hover:text-primary-600 font-medium transition-colors"
+                  className="text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-colors"
                 >
                   Tasks
                 </Link>
@@ -45,16 +46,19 @@ export default function Navbar({ isAuthenticated, userEmail, onSignOut }: Navbar
                 {/* Chat Link */}
                 <Link
                   href="/dashboard/chat"
-                  className="flex items-center gap-2 text-neutral-600 hover:text-primary-600 font-medium transition-colors"
+                  className="flex items-center gap-2 text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-colors"
                 >
                   <span>💬</span>
                   <span>AI Chat</span>
                 </Link>
 
+                {/* Theme Toggle */}
+                <ThemeToggle />
+
                 {/* Settings Link */}
                 <Link
                   href="/settings"
-                  className="p-2 text-neutral-600 hover:text-primary-600 hover:bg-neutral-100 rounded-lg transition-all"
+                  className="p-2 text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-all"
                   title="Settings"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
